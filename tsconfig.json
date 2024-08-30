@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist", // Le dossier où les fichiers compilés seront placés
+        "rootDir": "./src", // Le dossier source qui contient les fichiers .ts
+        "strict": true, // Active le mode strict pour des vérifications TypeScript plus strictes
+        "module": "commonjs", // Module système utilisé pour l'output
+        "target": "es6", // Version de JavaScript ciblée
+        "esModuleInterop": true, // Interopérabilité avec les modules ES6
+        "sourceMap": true, // Génère des fichiers source map
+        "allowJs": true, // Autorise l'utilisation de fichiers .js
+        "skipLibCheck": true, // Ignore les fichiers de définition de type
+    },
+    "include": [
+        "./src/**/*.ts" // Inclut tous les fichiers TypeScript sous src/
+    ],
+    "exclude": [
+        "node_modules" // Exclut les fichiers dans node_modules/
+    ]
+}

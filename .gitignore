@@ -1,0 +1,8 @@
+* text eol=crlf
+
+node_modules
+devconfig.toml
+dist
+dev
+.vscode/settings.json
+dev/

@@ -1,0 +1,15 @@
+[applistage]
+BASE_URL = "https://stage.iut-info-vannes.net" # Site de appli-stage, ne pas modifier | Obligatoire
+USERNAME = ""                                  # Nom d'utilisateur de appli-stage | Obligatoire
+PASSWORD = ""                                  # Mot de passe de appli-stage | Obligatoire
+INTERVAL = 0                                   # Intervalle en millisecondes pour récupérer les informations sur AppliStage | Obligatoire
+
+[webhook]
+URL = ""            # URL du webhook | Obligatoire
+METHOD = "POST"     # Méthode HTTP | Obligatoire
+TYPE = "text/plain" # Type de contenu | Obligatoire
+BODY = ""           # Corps de la requête | Obligatoire, voir le README pour plus d'informations
+HEADERS = {}        # En-têtes de la requête
+USERNAME = ""       # Nom d'utilisateur
+PASSWORD = ""       # Mot de passe
+TIMEOUT = 0         # Délai d'attente
