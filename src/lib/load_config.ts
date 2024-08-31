@@ -15,6 +15,7 @@ export type ApplistageConfig = {
  * Type contenant la configuration pour le webhook
  */
 export type WebhookConfig = {
+    CONFIG_NAME: string;
     URL: string;
     METHOD: string;
     BODY: string;
@@ -34,7 +35,26 @@ type AnyJson = {
  */
 export type Config = {
     applistage: ApplistageConfig;
-    webhook: WebhookConfig;
+    webhook: WebhookConfig[];
+}
+
+function getAllWebhookConfig(config: AnyJson): WebhookConfig[] {
+    const webHookConf : WebhookConfig[] = [];
+    for (const key in config) {
+        const newWebhookConfig = {
+            CONFIG_NAME: key,
+            URL: config[key].URL,
+            METHOD: config[key].METHOD,
+            BODY: config[key].BODY,
+            TYPE: config[key].TYPE,
+            HEADERS: config[key].HEADERS,
+            USERNAME: config[key].USERNAME,
+            PASSWORD: config[key].PASSWORD,
+            TIMEOUT: config[key].TIMEOUT
+        };
+        webHookConf.push(newWebhookConfig);
+    }
+    return webHookConf;
 }
 
 /**
@@ -53,16 +73,7 @@ export function loadConfig(path : string): Config {
             PASSWORD: parsedConfig.applistage.PASSWORD,
             INTERVAL: parsedConfig.applistage.INTERVAL,
         },
-        webhook: {
-            URL: parsedConfig.webhook.URL,
-            METHOD: parsedConfig.webhook.METHOD,
-            BODY: parsedConfig.webhook.BODY,
-            TYPE: parsedConfig.webhook.TYPE,
-            HEADERS: parsedConfig.webhook.HEADERS,
-            USERNAME: parsedConfig.webhook.USERNAME,
-            PASSWORD: parsedConfig.webhook.PASSWORD,
-            TIMEOUT: parsedConfig.webhook.TIMEOUT,
-        }
+        webhook: getAllWebhookConfig(parsedConfig.webhook)
     };
 
     return config;

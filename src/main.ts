@@ -1,12 +1,16 @@
 import dotenv from "dotenv";
 import { ILogObj, Logger } from "tslog";
 import { AppliStageFetch, Stage } from "./lib/appli_stage_fetch";
-import { Config, loadConfig } from "./lib/load_config";
+import { Config, loadConfig, WebhookConfig } from "./lib/load_config";
 import { sendMultipleWebhook, sendWebhook } from "./lib/send_webhook";
 dotenv.config();
 
 async function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getWebHookConfigName(webhookConfig : WebhookConfig[]) : string[] {
+    return webhookConfig.map((config) => config.CONFIG_NAME);
 }
 
 (async () => {
@@ -19,7 +23,7 @@ async function sleep(ms: number) {
             );
         }
         const config: Config = loadConfig(process.env.APPLISTAGE_CONFIG_PATH);
-
+        logger.info("Webhook chargé : " + getWebHookConfigName(config.webhook).join(", "));
         // Envoie un test sur le webhook
         const testStage: Stage = {
             subject: "Test",
@@ -33,8 +37,8 @@ async function sleep(ms: number) {
         try {
             await sendWebhook(config.webhook, testStage);
             logger.info("WebHook de test envoyé");
-        } catch {
-            throw new Error("Envoie du test au webhook impossible");
+        } catch (error){
+            throw new Error("Envoie du test au webhook impossible : " + error);
         }
         const appliStageFetch = new AppliStageFetch(
             config.applistage.BASE_URL,
@@ -42,9 +46,7 @@ async function sleep(ms: number) {
             config.applistage.PASSWORD
         );
         try {
-            const t = await appliStageFetch.fetchStages();
-            await sendMultipleWebhook(config.webhook, t)
-            
+            await appliStageFetch.fetchStages();
             logger.info("Récupération initial des stages réussis")
         } catch (error) {
             throw new Error(

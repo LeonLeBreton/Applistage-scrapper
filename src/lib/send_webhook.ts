@@ -48,12 +48,30 @@ function formatData(text: string, data: Stage): string {
 export async function sendMultipleWebhook(
     config: WebhookConfig,
     data: Stage[]
-) {
+): Promise<void>;
+
+export async function sendMultipleWebhook(
+    configs: WebhookConfig[],
+    data: Stage[]
+): Promise<void>;
+
+export async function sendMultipleWebhook(
+    config: WebhookConfig | WebhookConfig[],
+    data: Stage[]
+): Promise<void> {
     if (data.length > 0) {
-        sendWebhook(config, data[0]);
-        for (let i = 1; i < data.length; i++) {
-            await new Promise((resolve) => setTimeout(resolve, config.TIMEOUT));
-            sendWebhook(config, data[i]);
+        if (Array.isArray(config)) {
+            for (const aConfig of config) {
+                await sendMultipleWebhook(aConfig, data);
+            }
+        } else {
+            sendWebhook(config, data[0]);
+            for (let i = 1; i < data.length; i++) {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, config.TIMEOUT)
+                );
+                sendWebhook(config, data[i]);
+            }
         }
     }
 }
@@ -63,31 +81,50 @@ export async function sendMultipleWebhook(
  * @param config : Configuration du webhook
  * @param data : Données à envoyer
  */
-export async function sendWebhook(config: WebhookConfig, data: Stage) {
-    const body = formatData(config.BODY, data);
-    const headers: any = {
-        "Content-Type": config.TYPE,
-        ...config.HEADERS,
-    };
-    if (config.USERNAME || config.PASSWORD) {
-        headers["Authorization"] = `Basic ${Buffer.from(
-            `${config.USERNAME}:${config.PASSWORD}`
-        ).toString("base64")}`;
-    }
+export async function sendWebhook(
+    config: WebhookConfig,
+    data: Stage
+): Promise<void>;
 
-    await fetch(config.URL, {
-        method: config.METHOD,
-        body: body,
-        headers: headers,
-        credentials: "include",
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP ! statut: ${response.status}`);
-            }
-            return response.text();
+export async function sendWebhook(
+    config: WebhookConfig[],
+    data: Stage
+): Promise<void>;
+
+export async function sendWebhook(
+    config: WebhookConfig | WebhookConfig[],
+    data: Stage
+): Promise<void> {
+    if (Array.isArray(config)) {
+        for (const aConfig of config) {
+            await sendWebhook(aConfig, data);
+        }
+    } else {
+        const body = formatData(config.BODY, data);
+        const headers: any = {
+            "Content-Type": config.TYPE,
+            ...config.HEADERS,
+        };
+        if (config.USERNAME || config.PASSWORD) {
+            headers["Authorization"] = `Basic ${Buffer.from(
+                `${config.USERNAME}:${config.PASSWORD}`
+            ).toString("base64")}`;
+        }
+
+        await fetch(config.URL, {
+            method: config.METHOD,
+            body: body,
+            headers: headers,
+            credentials: "include",
         })
-        .catch((error) => {
-            throw new Error(`Erreur lors de l'envoi du webhook: ${error}`);
-        });
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP ! statut: ${response.status}`);
+                }
+                return response.text();
+            })
+            .catch((error) => {
+                throw new Error(`Erreur lors de l'envoi du webhook: ${error}`);
+            });
+    }
 }
