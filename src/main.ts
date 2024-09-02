@@ -4,6 +4,7 @@ import { AppliStageFetch, Stage } from "./lib/appli_stage_fetch";
 import { Config, loadConfig, WebhookConfig } from "./lib/load_config";
 import { sendMultipleWebhook, sendWebhook } from "./lib/send_webhook";
 dotenv.config();
+const logger: Logger<ILogObj> = new Logger();
 
 async function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -13,10 +14,31 @@ function getWebHookConfigName(webhookConfig : WebhookConfig[]) : string[] {
     return webhookConfig.map((config) => config.CONFIG_NAME);
 }
 
-(async () => {
-    const logger: Logger<ILogObj> = new Logger();
+async function send_test_webhook(config: Config) {
+    // Envoie un test sur le webhook
+    const testStage: Stage = {
+        subject: "Test",
+        url: "https://example.com",
+        creation_date: new Date(),
+        company: "Test",
+        city: "Test",
+        department: "Test",
+    };
 
     try {
+        await sendWebhook(config.webhook, testStage);
+        logger.info("WebHook de test envoyé");
+    } catch (error) {
+        throw new Error("Envoie du test au webhook impossible : " + error);
+    }
+}
+
+(async () => {
+    try {
+        let webhookTest = true;
+        if (process.env.DISABLE_WEBHOOK_TEST === "true") {
+            webhookTest = false;
+        }
         if (!process.env.APPLISTAGE_CONFIG_PATH) {
             throw new Error(
                 "APPLISTAGE_CONFIG_PATH is not defined in .env file or environment variables"
@@ -24,22 +46,11 @@ function getWebHookConfigName(webhookConfig : WebhookConfig[]) : string[] {
         }
         const config: Config = loadConfig(process.env.APPLISTAGE_CONFIG_PATH);
         logger.info("Webhook chargé : " + getWebHookConfigName(config.webhook).join(", "));
-        // Envoie un test sur le webhook
-        const testStage: Stage = {
-            subject: "Test",
-            url: "https://example.com",
-            creation_date: new Date(),
-            company: "Test",
-            city: "Test",
-            department: "Test",
-        };
 
-        try {
-            await sendWebhook(config.webhook, testStage);
-            logger.info("WebHook de test envoyé");
-        } catch (error){
-            throw new Error("Envoie du test au webhook impossible : " + error);
+        if (webhookTest) {
+            send_test_webhook(config);
         }
+
         const appliStageFetch = new AppliStageFetch(
             config.applistage.BASE_URL,
             config.applistage.USERNAME,
@@ -54,7 +65,7 @@ function getWebHookConfigName(webhookConfig : WebhookConfig[]) : string[] {
             );
         }
         while (true) {
-            sleep(config.applistage.INTERVAL);
+            await sleep(config.applistage.INTERVAL);
             let data = null;
             try {
                 data = await appliStageFetch.fetchNewStages();
