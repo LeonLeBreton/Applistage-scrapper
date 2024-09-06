@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { ILogObj, Logger } from "tslog";
-import { AppliStageFetch, Stage } from "./lib/appli_stage_fetch";
+import { AppliStageFetch, Stage, StageDiff } from "./lib/appli_stage_fetch";
 import { Config, loadConfig, WebhookConfig } from "./lib/load_config";
 import { sendMultipleWebhook, sendWebhook } from "./lib/send_webhook";
 dotenv.config();
@@ -46,7 +46,7 @@ async function send_test_webhook(config: Config) {
         }
         const config: Config = loadConfig(process.env.APPLISTAGE_CONFIG_PATH);
         logger.info("Webhook chargé : " + getWebHookConfigName(config.webhook).join(", "));
-
+        logger.debug("Le debug est activé");
         if (webhookTest) {
             send_test_webhook(config);
         }
@@ -66,21 +66,24 @@ async function send_test_webhook(config: Config) {
         }
         while (true) {
             await sleep(config.applistage.INTERVAL);
-            let data = null;
+            let data : StageDiff | null = null;
             try {
                 data = await appliStageFetch.fetchNewStages();
             } catch (error) {
                 logger.warn("Impossible de récupérer les stages : " + error);
             }
-            if (data && data.length > 0) {
+            if (data && data.diffList.length > 0) {
                 try {
-                    await sendMultipleWebhook(config.webhook, data);
+                    await sendMultipleWebhook(config.webhook, data.diffList);
                 } catch {
                     logger.warn(
                         "Impossible d'envoyer les nouveaux stages au webhook"
                     );
                 }
-                logger.info(data.length + " nouveau(x) stage(s)");
+                logger.info(data.diffList.length + " nouveau(x) stage(s)");
+            } else {
+                logger.info("Pas de nouveau stage");
+                logger.debug(data);
             }
         }
     } catch (error) {

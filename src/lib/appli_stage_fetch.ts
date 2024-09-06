@@ -13,6 +13,12 @@ export type Stage = {
     department: string | undefined;
 };
 
+export type StageDiff = {
+    oldList: Stage[];
+    newList: Stage[];
+    diffList: Stage[];
+};
+
 /**
  * Classe pour récupérer les stages depuis l'application AppliStage
  */
@@ -199,12 +205,16 @@ export class AppliStageFetch {
         return newList.filter((stage) => !oldUrls.includes(stage.url));
     }
 
-    public async fetchNewStages(): Promise<Stage[]> {
+    public async fetchNewStages(): Promise<StageDiff> {
         if (this._oldList === undefined) {
-            return await this.fetchStages();
+            const newList = await this.fetchStages();
+            const retour: StageDiff = { oldList: [], newList, diffList: newList };
+            return retour;
         }
         const oldList = this._oldList;
         const newList = await this.fetchStages();
-        return AppliStageFetch.diffStageList(oldList, newList);
+        const diffList = AppliStageFetch.diffStageList(oldList, newList);
+        const retour: StageDiff = { oldList, newList, diffList };
+        return retour;
     }
 }
