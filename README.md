@@ -10,10 +10,10 @@
 
 ## Ajouter un nouveau webhook
 
-Dans le fichier "config.toml", ajouter une nouvelle entrée dans la section "webhooks" :
+Dans le fichier "config.toml", ajouter une nouvelle entrée dans la section "webhook" :
 
 ```toml
-[webhooks]
+[webhook]
 [webhooks.first_webhook_name] # Nom du webhook, nom après le point
 URL = ""            # URL du webhook | Obligatoire
 METHOD = "POST"     # Méthode HTTP | Obligatoire
@@ -24,7 +24,7 @@ USERNAME = ""       # Nom d'utilisateur
 PASSWORD = ""       # Mot de passe
 TIMEOUT = 0         # Délai d'attente
 
-[webhooks.second_webhook_name] # Nom du webhook, nom après le point
+[webhook.second_webhook_name] # Nom du webhook, nom après le point
 URL = ""            # URL du webhook | Obligatoire
 METHOD = "POST"     # Méthode HTTP | Obligatoire
 TYPE = "text/plain" # Type de contenu | Obligatoire
@@ -39,7 +39,7 @@ TIMEOUT = 0         # Délai d'attente
 ## Exemple de Webhook
 ### Discord
 ```toml
-[webhooks.discord]
+[webhook.discord]
 URL = "https://discord.com/api/webhooks/xxxxx"
 METHOD = "POST"
 BODY = '{"username": "Appli-Stage", "content": "{{subject}} - Entreprise : {{company}} dans la ville de {{city}} (département : {{department}})\nLien : {{url}}, crée le {{creation_date}} "}'
