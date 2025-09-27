@@ -49,3 +49,12 @@ USERNAME = ""
 PASSWORD = ""
 TIMEOUT = 1000
 ```
+
+## Utilisation avec Docker
+Pour utiliser ce projet avec Docker, vous pouvez lancer le conteneur avec l'image suivante :
+
+```sh
+docker run --rm -v $(pwd)/config.toml:/app/config.toml ghcr.io/leonlebreton/applistage-scrapper:latest
+```
+
+Le fichier de configuration est le même que cité précédemment.
